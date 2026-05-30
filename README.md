@@ -1,4 +1,4 @@
-# PatientEngagement AI Agent
+# PatientEngagement MCP Server and Client
 
 An Agentic AI healthcare assistant built with Python, Flask, OpenAI Function Calling, MCP (Model Context Protocol), and SQLite.
 
@@ -43,6 +43,11 @@ PatientDataMCP     SchedulingMCP
           SQLite
 ```
 
+## Demo Screenshot
+
+![PatientEngagement Demo](screenshots/patient-engagement-demo.png)
+
+---
 ### Components
 
 #### PatientEngagement Agent
