@@ -1,378 +1,261 @@
-# PatientEngagement MCP Server and Client
+# Patient Engagement MCP Server and Client
 
-An Agentic AI healthcare assistant built with Python, Flask, OpenAI Function Calling, MCP (Model Context Protocol), and SQLite.
+A sample healthcare-focused AI application demonstrating the Model Context Protocol (MCP) architecture.
 
-The system helps patients perform common self-service healthcare operations such as:
+The project includes:
 
-* Patient Registration
-* Insurance Management
-* Appointment Scheduling
-* Appointment Rescheduling
-* Appointment Cancellation
-* Appointment Lookup
-
-The application demonstrates a modern AI architecture where an LLM orchestrates business operations through MCP servers instead of directly calling backend services.
-
----
+* MCP Servers exposing healthcare-related tools
+* MCP Client for communicating with MCP servers
+* AI Agent (MCP Host)
+* Flask-based web interface
+* SQLite database for persistence
 
 ## Architecture
 
 ```text
-Browser UI
-    |
-    v
-Flask Web Application
-    |
-    v
-PatientEngagement Agent
-    |
-    v
-OpenAI LLM
-    |
-    v
+User
+  │
+  ▼
+Flask Web UI
+  │
+  ▼
+AI Agent (MCP Host)
+  │
+  ▼
 MCP Client
-    |
-    +-------------------+
-    |                   |
-    v                   v
-PatientDataMCP     SchedulingMCP
-    |                   |
-    +---------+---------+
-              |
-              v
-          SQLite
+  │
+  ├───────────────┐
+  ▼               ▼
+Patient MCP     Scheduling MCP
+Server          Server
+  │               │
+  └───────┬───────┘
+          ▼
+      SQLite DB
 ```
 
 ## Demo Screenshot
 
-![PatientEngagement Demo](screenshots/patient-engagement-demo.png)
-
----
-### Components
-
-#### PatientEngagement Agent
-
-The agent:
-
-* Maintains conversation history
-* Understands patient intent
-* Collects missing information
-* Selects the correct tool
-* Calls MCP services
-* Generates patient-friendly responses
-
-#### PatientData MCP Server
-
-Responsible for:
-
-* Registering patients
-* Retrieving patient information
-* Updating insurance information
-* Retrieving insurance information
-
-#### Scheduling MCP Server
-
-Responsible for:
-
-* Scheduling appointments
-* Rescheduling appointments
-* Canceling appointments
-* Viewing appointments
-
-#### SQLite Database
-
-Stores:
-
-* Patient profiles
-* Insurance records
-* Appointment information
-
----
-
-## Technology Stack
-
-### Backend
-
-* Python 3.11+
-* Flask
-* SQLite
-
-### AI
-
-* OpenAI API
-* Function Calling
-* Agentic Workflow
-
-### Integration
-
-* MCP (Model Context Protocol)
-* FastMCP
-
-### Frontend
-
-* HTML
-* CSS
-* JavaScript
-
----
+![PatientEngagement Demo](app/screenshots/patient-engagement-demo.png)
 
 ## Project Structure
 
 ```text
-patient-engagement/
+Patient-Engagement-MCP-Server-and-Client/
 │
-├── app.py
-├── agent.py
-├── config.py
-├── database.py
-├── mcp_client.py
-│
-├── mcp_patient_data_server.py
-├── mcp_scheduling_server.py
-│
-├── templates/
-│   └── index.html
-│
-├── static/
-│   ├── app.js
-│   └── style.css
-│
-├── patient_engagement.db
-│
+├── README.md
 ├── requirements.txt
-└── README.md
+├── .env.example
+│
+├── app/
+│   ├── __init__.py
+│   │
+│   ├── web/
+│   │   ├── __init__.py
+│   │   ├── app.py
+│   │   ├── templates/
+│   │   └── static/
+│   │
+│   ├── agent/
+│   │   ├── __init__.py
+│   │   ├── agent.py
+│   │   └── prompts.py
+│   │
+│   ├── client/
+│   │   ├── __init__.py
+│   │   └── mcp_client.py
+│   │
+│   ├── servers/
+│   │   ├── __init__.py
+│   │   ├── mcp_patient_data_server.py
+│   │   └── mcp_scheduling_server.py
+│   │
+│   ├── db/
+│   │   ├── __init__.py
+│   │   ├── database.py
+│   │   └── schema.sql
+│   │
+│   └── config.py
+│
+├── data/
+│   └── patient_engagement.db
+│
+└── tests/
+    ├── test_patient_server.py
+    └── test_scheduling_server.py
 ```
 
----
+## Components
 
-## Features
+### Web UI
 
-### Register a New Patient
-
-Example:
+Location:
 
 ```text
-User:
-I would like to register.
-
-Agent:
-What is your full name?
-
-User:
-John Doe
-
-Agent:
-What is your date of birth?
-
-...
-
-Agent:
-Registration completed successfully.
-Your patient ID is abc12345.
+app/web/app.py
 ```
 
----
+Responsibilities:
 
-### Update Insurance
+* Accept user questions
+* Display AI responses
+* Communicate with AI Agent
 
-Example:
+### AI Agent (MCP Host)
+
+Location:
 
 ```text
-User:
-I need to update my insurance.
-
-Agent:
-What is your patient ID?
-
-User:
-abc12345
-
-Agent:
-Who is your insurance provider?
-
-...
+app/agent/agent.py
 ```
 
----
+Responsibilities:
 
-### Schedule Appointment
+* Interpret user requests
+* Select appropriate MCP tools
+* Call MCP servers through MCP client
+* Generate final responses
 
-Example:
+### MCP Client
+
+Location:
 
 ```text
-User:
-I need to schedule an appointment.
-
-Agent:
-What is your patient ID?
-
-User:
-abc12345
-
-Agent:
-What date would you like?
-
-...
+app/client/mcp_client.py
 ```
 
----
+Responsibilities:
+
+* Connect to MCP servers
+* Discover tools
+* Execute MCP tool calls
+
+### Patient Data MCP Server
+
+Location:
+
+```text
+app/servers/mcp_patient_data_server.py
+```
+
+Example tools:
+
+* get_patient
+* search_patients
+* update_patient
+
+### Scheduling MCP Server
+
+Location:
+
+```text
+app/servers/mcp_scheduling_server.py
+```
+
+Example tools:
+
+* get_appointments
+* create_appointment
+* cancel_appointment
+
+### Database Layer
+
+Location:
+
+```text
+app/db/database.py
+```
+
+Responsibilities:
+
+* SQLite connection management
+* CRUD operations
+* Data persistence
 
 ## Installation
 
-### Clone Repository
+Clone repository:
 
 ```bash
-git clone https://github.com/nguyener/PatientEngagement-AI-Agent.git
-
-cd PatientEngagement-AI-Agent
+git clone https://github.com/nguyener/Patient-Engagement-MCP-Server-and-Client.git
+cd Patient-Engagement-MCP-Server-and-Client
 ```
 
-### Create Virtual Environment
+Create virtual environment:
 
 ```bash
-python3 -m venv venv
-
+python -m venv venv
 source venv/bin/activate
 ```
 
-### Install Dependencies
+Install dependencies:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-Or manually:
-
-```bash
-pip install flask openai mcp
-```
-
----
-
-## Configure OpenAI
-
-Set your API key:
-
-### Mac/Linux
-
-```bash
-export OPENAI_API_KEY="your_api_key"
-```
-
-### Windows
-
-```cmd
-set OPENAI_API_KEY=your_api_key
-```
-
----
-
 ## Running the Application
 
-### Terminal 1
+### Start Patient Data MCP Server
 
-Start Patient Data MCP Server:
-
-```bash
-python mcp_patient_data_server.py
-```
-
-### Terminal 2
-
-Start Scheduling MCP Server:
+From project root:
 
 ```bash
-python mcp_scheduling_server.py
+python -m app.servers.mcp_patient_data_server
 ```
 
-### Terminal 3
+### Start Scheduling MCP Server
 
-Start Flask Application:
+From project root:
 
 ```bash
-python app.py
+python -m app.servers.mcp_scheduling_server
 ```
 
-Open:
+### Start Web Application
+
+From project root:
+
+```bash
+python -m app.web.app
+```
+
+Open browser:
 
 ```text
-http://127.0.0.1:5000
+http://localhost:5000
 ```
 
----
+## Example Questions
 
-## Database
+Patient Queries:
 
-SQLite database file:
+* Show patient 1001
+* Find patient John Smith
+* Update patient email
 
-```text
-patient_engagement.db
-```
+Appointment Queries:
 
-Inspect data:
+* Show appointments for patient 1001
+* Schedule appointment for next Monday
+* Cancel appointment 2005
 
-```bash
-sqlite3 patient_engagement.db
-```
+## Technologies
 
-List tables:
-
-```sql
-.tables
-```
-
-View patients:
-
-```sql
-SELECT * FROM patients;
-```
-
-View appointments:
-
-```sql
-SELECT * FROM appointments;
-```
-
-Exit:
-
-```sql
-.quit
-```
-
----
-
-## Why MCP?
-
-Instead of allowing the LLM to directly call backend functions, MCP provides:
-
-* Standardized tool discovery
-* Tool isolation
-* Multi-server architecture
-* Easier integration with future AI agents
-* Better separation of concerns
-
-This architecture mirrors how enterprise AI systems are being designed.
-
----
+* Python
+* Flask
+* SQLite
+* Model Context Protocol (MCP)
+* OpenAI SDK
+* HTML/CSS/JavaScript
 
 ## Future Enhancements
 
-* Patient lookup by phone number
-* Insurance eligibility verification
-* Provider search
-* Appointment slot search
-* SMS notifications
-* Email notifications
-* Contact preference management
 * Authentication and authorization
-* Integration with Electronic Health Records (EHR)
-* Integration with Oracle Health / Cerner APIs
-* Deployment to AWS, Azure, or OCI
-
----
-
-## Disclaimer
-
-This project is intended for educational and demonstration purposes.
-
-It does not provide medical advice, diagnosis, or treatment. For medical emergencies, call 911 or visit the nearest emergency room.
+* Notification MCP Server
+* Email and SMS integration
+* FHIR integration
+* Oracle Health EHR integration
+* Vector search and semantic patient lookup
+* Multi-agent orchestration
+* LangGraph workflow support
