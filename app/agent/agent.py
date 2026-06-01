@@ -25,7 +25,8 @@ class PatientEngagementAgent:
                         "full_name": {"type": "string"},
                         "dob": {"type": "string"},
                         "phone": {"type": "string"},
-                        "email": {"type": "string"}
+                        "email": {"type": "string"},
+                        "state": {"type": "string"}
                     },
                     "required": ["full_name", "dob", "phone", "email"],
                     "additionalProperties": False
@@ -129,36 +130,51 @@ class PatientEngagementAgent:
             tools=self.tools
         )
 
+        function_calls = [
+            item for item in response.output
+            if item.type == "function_call"
+        ]
+        
+        if not function_calls:
+            self.conversation += response.output
+            return response.output_text
+
+        tool_outputs = []
+
+        for item in function_calls:
+            tool_name = item.name
+            arguments = json.loads(item.arguments)
+
+            server_name = self.tool_to_server[tool_name]
+
+            tool_result = asyncio.run(
+                self.mcp_client.call_tool(
+                    server_name=server_name,
+                    tool_name=tool_name,
+                    arguments=arguments
+                )
+            )
+            print("RAW MCP TOOL RESULT:", repr(tool_result))
+            print("RAW MCP TOOL RESULT TYPE:", type(tool_result))
+
+            tool_outputs.append({
+                "type": "function_call_output",
+                "call_id": item.call_id,
+                "output": str(tool_result)
+            })
+            
+        
+        final_response = client.responses.create(
+            model=MODEL,
+            previous_response_id=response.id,
+            input=tool_outputs,
+            tools=self.tools
+       )
+
         self.conversation += response.output
+        self.conversation += tool_outputs
+        self.conversation += final_response.output
 
-        for item in response.output:
-            if item.type == "function_call":
-                tool_name = item.name
-                arguments = json.loads(item.arguments)
+        return final_response.output_text
 
-                server_name = self.tool_to_server[tool_name]
-
-                tool_result = asyncio.run(
-                    self.mcp_client.call_tool(
-                        server_name=server_name,
-                        tool_name=tool_name,
-                        arguments=arguments
-                    )
-                )
-
-                self.conversation.append({
-                    "type": "function_call_output",
-                    "call_id": item.call_id,
-                    "output": tool_result
-                })
-
-                final_response = client.responses.create(
-                    model=MODEL,
-                    input=self.conversation,
-                    tools=self.tools
-                )
-
-                self.conversation += final_response.output
-                return final_response.output_text
-
-        return response.output_text
+        

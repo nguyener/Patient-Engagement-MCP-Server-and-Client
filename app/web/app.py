@@ -17,6 +17,7 @@ def chat():
     user_message = data.get("message", "")
 
     response = agent.handle_message(user_message)
+    print("AGENT RESPONSE:", repr(response))
 
     return jsonify({"response": response})
 

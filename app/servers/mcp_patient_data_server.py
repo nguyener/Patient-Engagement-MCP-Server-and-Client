@@ -1,12 +1,61 @@
 import uuid
 from mcp.server.fastmcp import FastMCP
 from app.db.database import get_connection
+from datetime import datetime, date
 
 mcp = FastMCP("PatientDataMCP")
 
+@mcp.resource("policy://registration/washington-only")
+def washington_registration_policy() -> str:
+    return """
+Patient Registration Policy
+
+Only residents of Washington State are allowed to register.
+
+Validation rule:
+- state must be WA or Washington
+- registration must be rejected for all other states
+"""
+
+@mcp.resource("policy://registration/adult-only")
+def adult_registration_policy() -> str:
+    return """
+Patient Registration Policy
+
+Only adults aged 18 or older may self-register.
+
+Rules:
+- Age must be >= 18
+- Under 18 requires a parent or legal guardian
+- Registration must be denied for minors
+"""
 
 @mcp.tool()
-def register_patient(full_name: str, dob: str, phone: str, email: str) -> dict:
+def register_patient(full_name: str, dob: str, phone: str, email: str, state: str) -> dict:
+    print("REGISTER PATIENT CALLED")
+    print(full_name)
+    print(dob)
+    print(phone)
+    print(email)
+    print(state)
+    if not is_washington_resident(state):
+        return {
+            "success": False,
+            "error": "Registration denied. Only Washington residents are allowed to register.",
+            "policy": "policy://registration/washington-only"
+        }
+    
+    age = calculate_age(dob)
+
+    if age < 18:
+        return {
+            "success": False,
+            "message":
+                "Registration denied. Patient must be at least 18 years old.",
+            "policy":
+                "policy://registration/adult-only"
+        }
+
     """Register a new patient."""
     patient_id = str(uuid.uuid4())[:8]
 
@@ -93,6 +142,24 @@ def get_insurance(patient_id: str) -> dict:
 
     return {"success": True, "insurance": dict(row)}
 
+def is_washington_resident(state: str) -> bool:
+    if not state:
+        return False
+
+    normalized = state.strip().lower()
+    return normalized in {"wa", "washington"}
+
+def calculate_age(dob: str) -> int:
+    birth_date = datetime.strptime(dob, "%m/%d/%Y").date()
+
+    today = date.today()
+
+    return (
+        today.year
+        - birth_date.year
+        - ((today.month, today.day) <
+           (birth_date.month, birth_date.day))
+    )
 
 if __name__ == "__main__":
     mcp.run()
