@@ -5,18 +5,30 @@
   <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-  <div class="chat-container">
-    <h2>PatientEngagement</h2>
+  <main class="app-shell">
+    <section class="chat-container">
+      <h2>PatientEngagement</h2>
 
-    <div id="chat-box" class="chat-box">
-      <div class="bot message">How can I help you today?</div>
-    </div>
+      <div id="chat-box" class="chat-box">
+        <div class="bot message">How can I help you today?</div>
+      </div>
 
-    <div class="input-row">
-      <input id="message-input" type="text" placeholder="Type your message..." />
-      <button onclick="sendMessage()">Send</button>
-    </div>
-  </div>
+      <div class="input-row">
+        <input id="message-input" type="text" placeholder="Type your message..." />
+        <button onclick="sendMessage()">Send</button>
+      </div>
+    </section>
+
+    <aside class="context-panel">
+      <div class="context-header">
+        <h2>MCP Context</h2>
+        <button id="refresh-context" type="button">Refresh</button>
+      </div>
+      <div id="context-list" class="context-list">
+        <div class="context-empty">Loading context...</div>
+      </div>
+    </aside>
+  </main>
 
   <script src="/static/app.js"></script>
 </body>

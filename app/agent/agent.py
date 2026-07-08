@@ -1,3 +1,4 @@
+import ast
 import json
 import asyncio
 from openai import OpenAI
@@ -28,7 +29,7 @@ class PatientEngagementAgent:
                         "email": {"type": "string"},
                         "state": {"type": "string"}
                     },
-                    "required": ["full_name", "dob", "phone", "email"],
+                    "required": ["full_name", "dob", "phone", "email", "state"],
                     "additionalProperties": False
                 }
             },
@@ -118,6 +119,74 @@ class PatientEngagementAgent:
             "view_appointments": "scheduling",
         }
 
+        self.mcp_context_blocks = []
+        self.mcp_runtime_context_blocks = []
+        self._add_mcp_context()
+
+    def _add_mcp_context(self):
+        resource_uris = [
+            ("patient", "context://patient-data/overview"),
+            ("patient", "policy://registration/washington-only"),
+            ("patient", "policy://registration/adult-only"),
+            ("scheduling", "context://scheduling/overview"),
+        ]
+
+        context_blocks = []
+
+        for server_name, uri in resource_uris:
+            try:
+                resource_text = asyncio.run(
+                    self.mcp_client.read_resource(server_name, uri)
+                )
+            except Exception as exc:
+                print(f"Unable to load MCP context resource {uri}: {exc}")
+                continue
+
+            if resource_text:
+                context_blocks.append({
+                    "server": server_name,
+                    "uri": uri,
+                    "content": resource_text.strip(),
+                })
+
+        if context_blocks:
+            self.mcp_context_blocks = context_blocks
+            self.conversation.append({
+                "role": "system",
+                "content": "MCP context available to this agent:\n\n"
+                + "\n\n".join(
+                    f"Resource: {block['uri']}\n{block['content']}"
+                    for block in context_blocks
+                )
+            })
+
+    def get_mcp_context(self):
+        return self.mcp_context_blocks + self.mcp_runtime_context_blocks
+
+    def _add_runtime_context(self, server_name, tool_name, tool_result):
+        parsed_result = None
+
+        try:
+            parsed_result = json.loads(tool_result)
+        except json.JSONDecodeError:
+            try:
+                parsed_result = ast.literal_eval(tool_result)
+            except (ValueError, SyntaxError):
+                return
+
+        if not isinstance(parsed_result, dict):
+            return
+
+        runtime_context = parsed_result.get("runtime_context", [])
+        if not runtime_context:
+            return
+
+        self.mcp_runtime_context_blocks.append({
+            "server": server_name,
+            "uri": f"runtime://{tool_name}",
+            "content": "\n".join(runtime_context),
+        })
+
     def handle_message(self, user_input: str) -> str:
         self.conversation.append({
             "role": "user",
@@ -156,6 +225,7 @@ class PatientEngagementAgent:
             )
             print("RAW MCP TOOL RESULT:", repr(tool_result))
             print("RAW MCP TOOL RESULT TYPE:", type(tool_result))
+            self._add_runtime_context(server_name, tool_name, tool_result)
 
             tool_outputs.append({
                 "type": "function_call_output",

@@ -1,22 +1,44 @@
 body {
   font-family: Arial, sans-serif;
   background: #f5f7fb;
+  margin: 0;
+  min-height: 100vh;
 }
 
-.chat-container {
-  width: 500px;
-  margin: 60px auto;
+.app-shell {
+  display: grid;
+  grid-template-columns: minmax(420px, 560px) minmax(320px, 440px);
+  gap: 20px;
+  max-width: 1040px;
+  min-height: calc(100vh - 40px);
+  margin: 0 auto;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.chat-container,
+.context-panel {
+  display: flex;
+  flex-direction: column;
   background: white;
-  border-radius: 12px;
+  border-radius: 8px;
   padding: 20px;
   box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+  min-height: 0;
+}
+
+.chat-container h2,
+.context-header h2 {
+  margin: 0;
 }
 
 .chat-box {
-  height: 840px;
+  flex: 1;
+  min-height: 0;
   overflow-y: auto;
   border: 1px solid #ddd;
   padding: 12px;
+  margin-top: 16px;
   margin-bottom: 12px;
 }
 
@@ -40,11 +62,90 @@ body {
   gap: 8px;
 }
 
+.context-panel {
+  min-width: 0;
+}
+
+.context-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.context-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.context-item {
+  flex: 0 0 auto;
+  border: 1px solid #d7dde8;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fbfcff;
+}
+
+.context-meta {
+  padding: 10px 12px;
+  background: #eef6f4;
+  border-bottom: 1px solid #d7dde8;
+  color: #21413d;
+  font-size: 12px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.context-content {
+  margin: 0;
+  padding: 12px;
+  max-height: 170px;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  color: #2f3747;
+  font-family: Arial, sans-serif;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.context-empty {
+  border: 1px dashed #c6cfda;
+  border-radius: 8px;
+  padding: 14px;
+  color: #687386;
+}
+
 input {
   flex: 1;
   padding: 10px;
+  min-width: 0;
 }
 
 button {
   padding: 10px 16px;
+}
+
+@media (max-width: 900px) {
+  .app-shell {
+    grid-template-columns: 1fr;
+    min-height: auto;
+    padding: 20px;
+  }
+
+  .chat-box {
+    height: 520px;
+    flex: none;
+  }
+
+  .context-list {
+    max-height: 520px;
+    flex: none;
+  }
 }

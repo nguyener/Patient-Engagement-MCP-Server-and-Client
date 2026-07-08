@@ -22,5 +22,10 @@ def chat():
     return jsonify({"response": response})
 
 
+@app.route("/context", methods=["GET"])
+def context():
+    return jsonify({"context": agent.get_mcp_context()})
+
+
 if __name__ == "__main__":
     app.run(host="127.0.0.1", port=5000, debug=True)

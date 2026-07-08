@@ -129,6 +129,20 @@ Responsibilities:
 * Connect to MCP servers
 * Discover tools
 * Execute MCP tool calls
+* Read MCP context resources
+
+### MCP Context Resources
+
+The MCP servers expose reusable context through resources:
+
+* `context://patient-data/overview`
+* `policy://registration/washington-only`
+* `policy://registration/adult-only`
+* `patient://{patient_id}/context`
+* `context://scheduling/overview`
+* `appointments://{patient_id}/context`
+
+The AI Agent loads the static context and policy resources during startup so tool selection and final responses can use server-provided context.
 
 ### Patient Data MCP Server
 
